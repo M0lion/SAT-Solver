@@ -2,82 +2,46 @@
 
 Formula::Formula(std::string input)
 {
-	numberOfClauses = input.length() == 0 ? 0 : 1;
-	isValid = numberOfClauses > 0;
+	numberOfClauses = 0;
 	for (int i = 0; i < input.length(); i++)
 	{
 		if (input[i] == ';')
 			numberOfClauses++;
 	}
 
-	newClauses.reserve(numberOfClauses);
+	clauses.reserve(numberOfClauses);
 	int i = 0;
 	int clauseStart = 0;
 	for (int reader = 0; reader < input.length(); reader++)
 	{
 		if (input[reader] == ';')
 		{
-			newClauses.push_back(new Clause(std::string(&input[clauseStart]), reader - clauseStart));
-			if (newClauses[i]->varRange > varRange)
-				varRange = newClauses[i]->varRange;
+			clauses.push_back(new Clause(std::string(&input[clauseStart]), reader - clauseStart));
+			if (clauses[i]->varRange > varRange)
+				varRange = clauses[i]->varRange;
 
 			i++;
 			clauseStart = reader + 1;
 		}
 	}
-	newClauses.push_back(new Clause(std::string(&input[clauseStart]), input.length() - clauseStart));
-}
-
-Formula::Formula(Formula* input)
-{
-	varRange = input->varRange;
-	numberOfClauses = input->numberOfClauses;
-	isValid = numberOfClauses > 0;
-	clausesLength = numberOfClauses;
-	clauses = new Clause*[clausesLength];
-	int i = 0;
-	for (int j = 0; j < input->clausesLength; j++)
-	{
-		clauses[i] = input->clauses[j];
-		i++;
-	}
-	for (int j = 0; j < input->newClauses.size(); j++)
-	{
-		clauses[i] = input->newClauses[j];
-		i++;
-	}
-
-	input->deleteClauses = false;
+	clauses.push_back(new Clause(std::string(&input[clauseStart]), input.length() - clauseStart));
 }
 
 Formula::~Formula()
 {
-	if(deleteClauses)
+	for (int i = 0; i < clauses.size(); i++)
 	{
-		if (clauses != nullptr)
-		{
-			for (int i = 0; i < numberOfClauses; i++)
-			{
-				delete(clauses[i]);
-			}
-		}
-		for (int i = 0; i < newClauses.size(); i++)
-		{
-			delete(newClauses[i]);
-		}
+		delete(clauses[i]);
 	}
-	
-	if(clauses != nullptr)
-		delete(clauses);
 }
 
 Bool Formula::getValue(Assignment* a)
 {
 	Bool value = 1;
 
-	for (int i = 0; i < newClauses.size(); i++)
+	for (int i = 0; i < clauses.size(); i++)
 	{
-		Bool clause = newClauses[i]->getValue(a);
+		Bool clause = clauses[i]->getValue(a);
 		if (clause == 0)
 			value = 0;
 		else if (clause == -1)
@@ -89,34 +53,20 @@ Bool Formula::getValue(Assignment* a)
 
 void Formula::Print()
 {
-	if (clauses != nullptr)
+	for (int i = 0; i < clauses.size(); i++)
 	{
-		for (int i = 0; i < numberOfClauses; i++)
-		{
-			clauses[i]->Print();
-			printf("; ");
-		}
-		printf("-");
-	}
-
-	for (int i = 0; i < newClauses.size(); i++)
-	{
-		newClauses[i]->Print();
+		clauses[i]->Print();
 		printf("; ");
 	}
 
 	printf("\n");
 }
 
-Formula* Formula::Resolve(Formula* formula)
-{
-	Formula* newFormula = new Formula(formula);
-
-	return newFormula;
-}
-
 bool Formula::SAT(Assignment* a)
 {
+	if (numberOfClauses == 0)
+		return false;
+
 	bool* localAssigns = new bool[varRange + 1];
 	for (int i = 0; i <= varRange; i++)
 	{
@@ -133,11 +83,11 @@ bool Formula::SAT(Assignment* a)
 	else if (val == -1)
 		return false;
 
-	for (int i = 0; i < newClauses.size(); i++)
+	for (int i = 0; i < clauses.size(); i++)
 	{
-		if (newClauses[i]->unassignedLiterals(a) == 1)
+		if (clauses[i]->unassignedLiterals(a) == 1)
 		{
-			int lit = newClauses[i]->unassignedLiteral(a);
+			int lit = clauses[i]->unassignedLiteral(a);
 			localAssigns[abs(lit)] = true;
 			a->setValue(abs(lit), lit > 0 ? 1 : -1);
 		}
@@ -148,12 +98,12 @@ bool Formula::SAT(Assignment* a)
 		if (a->getValue(i) == 0)
 		{
 			Bool hasVar = 0;
-			for (int j = 0; j < newClauses.size(); j++)
+			for (int j = 0; j < clauses.size(); j++)
 			{
-				if (newClauses[j]->getValue(a) != 0)
+				if (clauses[j]->getValue(a) != 0)
 					continue;
 
-				Bool clauseHasVar = newClauses[j]->hasVar(i);
+				Bool clauseHasVar = clauses[j]->hasVar(i);
 				if (hasVar == 0)
 					hasVar = clauseHasVar;
 				else if (hasVar != clauseHasVar)

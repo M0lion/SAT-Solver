@@ -4,15 +4,26 @@
 Clause::Clause(std::string input, int inputLength)
 {
 	length = 0;
+	bool foundLiteral = false;
 	for (int i = 0; i < inputLength; i++)
 	{
 		if (isdigit(input[i]))
 		{
-			length++;
+			if (!foundLiteral)
+			{
+				length++;
+				foundLiteral = true;
+			}
 		}
+		else if (input[i] == ' ')
+			foundLiteral = false;
 	}
 
-	char* lit = new char[2];
+	char* lit = new char[100];
+	for (int i = 0; i < 100; i++)
+	{
+		lit[i] = '\0';
+	}
 	lit[1] = 0;
 
 	literals = new int[length];
@@ -28,15 +39,26 @@ Clause::Clause(std::string input, int inputLength)
 			neg = true;
 			reader++;
 		}
+		
+		int j = 0;
+		while (input[reader] != ' ' && reader < input.length())
+		{
+			if (j == 99)
+			{
+				throw "variable too big!";
+			}
 
-		lit[0] = input[reader];
+			lit[j] = input[reader];
+
+			j++;
+			reader++;
+		}
+
 		literals[i] = atoi(lit);
 		if (abs(literals[i]) > varRange)
 			varRange = abs(literals[i]);
 		if (neg)
 			literals[i] *= -1;
-
-		reader++;
 	}
 
 	delete(lit);
@@ -64,39 +86,6 @@ bool Clause::Contains(int lit)
 	}
 
 	return false;
-}
-
-clauseList Clause::getResolvents(Clause* clause)
-{
-	clauseList resolvents;
-	resolvents.reserve(length * clause->length);
-	for (int i = 0; i < length; i++)
-	{
-		if (clause->Contains(literals[i] * -1))
-		{
-			std::stringstream newClause;
-			for (int j = 0; j < length; j++)
-			{
-				if (literals[j] != literals[i])
-				{
-					newClause << literals[j] << " ";
-				}
-			}
-			for (int j = 0; j < clause->length; j++)
-			{
-				std::stringstream intToStr;
-				intToStr << clause->literals[j];
-				if (clause->literals[j] != literals[i] * -1 && newClause.str().find(intToStr.str()) != std::string::npos)
-				{
-					newClause << literals[j] << " ";
-				}
-			}
-			std::string clauseString = newClause.str();
-			resolvents.push_back(new Clause(clauseString, clauseString.length()));
-		}
-	}
-
-	return resolvents;
 }
 
 Bool Clause::getValue(Assignment* a)

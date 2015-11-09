@@ -1,27 +1,29 @@
-
-#include "Clause.h"
 #include <string>
+#include <fstream>
 
 #include "Formula.h"
 
-int main()
+int main(char* args[], int argc)
 {
-	std::string clauseTest = "1 2 -3 -4 5 5 -3";
-	Clause test(clauseTest, clauseTest.length());
-	test.Print();
-	printf("\n");
+	std::string input = "cnf_test.txt";
 
-	Formula testFormula("");
-	testFormula.Print();
-	
-	Assignment assignment(3);
-	assignment.setValue(1, 1);
-	assignment.setValue(2, 1);
-	assignment.setValue(3, 1);
-	printf("%d\n", testFormula.getValue(&assignment));
+	std::ifstream infile(input);
 
-	bool res = testFormula.SAT();
-	printf("%d\n", res);
+	if (!infile.is_open())
+	{
+		printf("couldn't open '%s'!\n", input);
+		return 0;
+	}
+
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		Formula formula(line);
+		if (formula.SAT())
+		{
+			printf("%s\n", line.c_str());
+		}
+	}
 
 	scanf_s("/n");
 }
