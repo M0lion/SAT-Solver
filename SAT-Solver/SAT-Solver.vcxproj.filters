@@ -21,7 +21,10 @@
     <ClCompile Include="Clause.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Resolution.cpp">
+    <ClCompile Include="Formula.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assignment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +32,10 @@
     <ClInclude Include="Clause.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resolution.h">
+    <ClInclude Include="Formula.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assignment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

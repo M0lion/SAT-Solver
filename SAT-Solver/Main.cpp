@@ -2,7 +2,7 @@
 #include "Clause.h"
 #include <string>
 
-#include "Resolution.h"
+#include "Formula.h"
 
 int main()
 {
@@ -11,8 +11,17 @@ int main()
 	test.Print();
 	printf("\n");
 
-	Resolution testFormula("1 2 3; 1 2 -3; 1 -2 3; 1 -2 -3; -1 2 3; -1 2 -3; -1 -2 3; -1 -2 -3");
+	Formula testFormula("");
 	testFormula.Print();
+	
+	Assignment assignment(3);
+	assignment.setValue(1, 1);
+	assignment.setValue(2, 1);
+	assignment.setValue(3, 1);
+	printf("%d\n", testFormula.getValue(&assignment));
+
+	bool res = testFormula.SAT();
+	printf("%d\n", res);
 
 	scanf_s("/n");
 }
